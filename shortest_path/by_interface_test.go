@@ -8,59 +8,59 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func String(vs []interface{}) string {
+func ByInterfaceString(vs []interface{}) string {
 	ids := make([]string, len(vs))
 	for i, v := range vs {
-		ids[i] = v.(*testVertex).String()
+		ids[i] = v.(*testByInterfaceVertex).String()
 	}
 
 	return strings.Join(ids, ",")
 }
 
-type testVertex struct {
+type testByInterfaceVertex struct {
 	id    string
 	edges []shortest_path.Edge
 }
 
-func (v *testVertex) Edges() []shortest_path.Edge {
+func (v *testByInterfaceVertex) Edges() []shortest_path.Edge {
 	return v.edges
 }
 
-func (v *testVertex) addEdge(to *testVertex, cost int) *testVertex {
-	v.edges = append(v.edges, &testEdge{
+func (v *testByInterfaceVertex) addEdge(to *testByInterfaceVertex, cost int) *testByInterfaceVertex {
+	v.edges = append(v.edges, &testByInterfaceEdge{
 		cost: cost, from: v, to: to,
 	})
 	return v
 }
 
-func (v *testVertex) String() string {
+func (v *testByInterfaceVertex) String() string {
 	return v.id
 }
 
-type testEdge struct {
+type testByInterfaceEdge struct {
 	cost int
-	from *testVertex
-	to   *testVertex
+	from *testByInterfaceVertex
+	to   *testByInterfaceVertex
 }
 
-func (e *testEdge) Cost() int {
+func (e *testByInterfaceEdge) Cost() int {
 	return e.cost
 }
 
-func (e *testEdge) From() shortest_path.Vertex {
+func (e *testByInterfaceEdge) From() shortest_path.Vertex {
 	return e.from
 }
 
-func (e *testEdge) To() shortest_path.Vertex {
+func (e *testByInterfaceEdge) To() shortest_path.Vertex {
 	return e.to
 }
 
-type testGraph struct {
-	vs map[string]*testVertex
+type testByInterfaceGraph struct {
+	vs map[string]*testByInterfaceVertex
 }
 
-func (graph *testGraph) buildTestGraph() {
-	graph.vs = map[string]*testVertex{
+func (graph *testByInterfaceGraph) buildTestByInterfaceGraph() {
+	graph.vs = map[string]*testByInterfaceVertex{
 		"a": {id: "a"},
 		"b": {id: "b"},
 		"c": {id: "c"},
@@ -79,9 +79,9 @@ func (graph *testGraph) buildTestGraph() {
 	graph.vs["g"].addEdge(graph.vs["e"], 4)
 }
 
-func Test_UniformCost_TestEmptyFrom(t *testing.T) {
-	graph := &testGraph{}
-	graph.buildTestGraph()
+func Test_UniformCostByInterface_TestEmptyFrom(t *testing.T) {
+	graph := &testByInterfaceGraph{}
+	graph.buildTestByInterfaceGraph()
 
 	uc := shortest_path.NewUniformCostByInterface()
 
@@ -90,9 +90,9 @@ func Test_UniformCost_TestEmptyFrom(t *testing.T) {
 	assert.False(t, actual.Found)
 }
 
-func Test_UniformCost_TestEmptyTo(t *testing.T) {
-	graph := &testGraph{}
-	graph.buildTestGraph()
+func Test_UniformCostByInterface_TestEmptyTo(t *testing.T) {
+	graph := &testByInterfaceGraph{}
+	graph.buildTestByInterfaceGraph()
 
 	uc := shortest_path.NewUniformCostByInterface()
 
@@ -101,20 +101,20 @@ func Test_UniformCost_TestEmptyTo(t *testing.T) {
 	assert.False(t, actual.Found)
 }
 
-func Test_UniformCost_TestNotFound(t *testing.T) {
-	graph := &testGraph{}
-	graph.buildTestGraph()
+func Test_UniformCostByInterface_TestNotFound(t *testing.T) {
+	graph := &testByInterfaceGraph{}
+	graph.buildTestByInterfaceGraph()
 
 	uc := shortest_path.NewUniformCostByInterface()
 
-	actual := uc.Find(graph.vs["a"], &testVertex{id: "c"})
+	actual := uc.Find(graph.vs["a"], &testByInterfaceVertex{id: "h"})
 	assert.NotNil(t, actual)
 	assert.False(t, actual.Found)
 }
 
-func Test_UniformCost_TestSearchSameNode(t *testing.T) {
-	graph := &testGraph{}
-	graph.buildTestGraph()
+func Test_UniformCostByInterface_TestSearchSameNode(t *testing.T) {
+	graph := &testByInterfaceGraph{}
+	graph.buildTestByInterfaceGraph()
 
 	uc := shortest_path.NewUniformCostByInterface()
 
@@ -122,12 +122,12 @@ func Test_UniformCost_TestSearchSameNode(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.True(t, actual.Found)
 	assert.Equal(t, actual.Cost, 0)
-	assert.Equal(t, String(actual.Path), "a")
+	assert.Equal(t, ByInterfaceString(actual.Path), "a")
 }
 
-func Test_UniformCost_TestShortestPathFound(t *testing.T) {
-	graph := &testGraph{}
-	graph.buildTestGraph()
+func Test_UniformCostByInterface_TestShortestPathFound(t *testing.T) {
+	graph := &testByInterfaceGraph{}
+	graph.buildTestByInterfaceGraph()
 
 	uc := shortest_path.NewUniformCostByInterface()
 
@@ -135,5 +135,5 @@ func Test_UniformCost_TestShortestPathFound(t *testing.T) {
 	assert.NotNil(t, actual)
 	assert.True(t, actual.Found)
 	assert.Equal(t, actual.Cost, 8)
-	assert.Equal(t, String(actual.Path), "a,d,f,g")
+	assert.Equal(t, ByInterfaceString(actual.Path), "a,d,f,g")
 }

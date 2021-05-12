@@ -4,24 +4,25 @@ import (
 	"container/heap"
 )
 
-type Vertex interface {
-	Edges() []Edge
+type edges func(interface{}) []interface{}
+type edgeEnd func(interface{}) interface{}
+type edgeCost func(interface{}) int
+
+type byFunc struct {
+	edges    edges
+	edgeEnd  edgeEnd
+	edgeCost edgeCost
 }
 
-type Edge interface {
-	Cost() int
-	From() Vertex
-	To() Vertex
+func NewUniformCostByFunc(edges edges, edgeEnd edgeEnd, edgeCost edgeCost) *byFunc {
+	return &byFunc{
+		edges:    edges,
+		edgeEnd:  edgeEnd,
+		edgeCost: edgeCost,
+	}
 }
 
-type byInterface struct {
-}
-
-func NewUniformCostByInterface() UniformCost {
-	return &byInterface{}
-}
-
-func (b *byInterface) Find(from interface{}, to interface{}) *Result {
+func (b *byFunc) Find(from interface{}, to interface{}) *Result {
 	if from == nil || to == nil {
 		return &Result{Found: false}
 	}
@@ -38,7 +39,7 @@ func (b *byInterface) Find(from interface{}, to interface{}) *Result {
 
 	pq := make(PriorityQueue, 1)
 	initialNode := &node{
-		vertex:    from.(Vertex),
+		vertex:    from,
 		totalCost: 0,
 		path: []interface{}{
 			from,
@@ -68,15 +69,15 @@ func (b *byInterface) Find(from interface{}, to interface{}) *Result {
 
 		explored[n.vertex] = true
 
-		for _, edge := range n.vertex.(Vertex).Edges() {
-			to := edge.To()
+		for _, edge := range b.edges(n.vertex) {
+			to := b.edgeEnd(edge)
 			if _, found := explored[to]; !found {
 				path := make([]interface{}, len(n.path)+1)
 				copy(path, n.path)
 				path[len(path)-1] = to
 				newNode := &node{
 					vertex:    to,
-					totalCost: n.totalCost + edge.Cost(),
+					totalCost: n.totalCost + b.edgeCost(edge),
 					path:      path,
 				}
 				heap.Push(&pq, NewItem(
