@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func String(vs []shortest_path.Vertex) string {
+func String(vs []interface{}) string {
 	ids := make([]string, len(vs))
 	for i, v := range vs {
 		ids[i] = v.(*testVertex).String()
@@ -83,36 +83,44 @@ func Test_UniformCost_TestEmptyFrom(t *testing.T) {
 	graph := &testGraph{}
 	graph.buildTestGraph()
 
-	found, actual := shortest_path.Find(nil, graph.vs["b"])
-	assert.False(t, found)
-	assert.Nil(t, actual)
+	uc := shortest_path.NewUniformCostByInterface()
+
+	actual := uc.Find(nil, graph.vs["b"])
+	assert.NotNil(t, actual)
+	assert.False(t, actual.Found)
 }
 
 func Test_UniformCost_TestEmptyTo(t *testing.T) {
 	graph := &testGraph{}
 	graph.buildTestGraph()
 
-	found, actual := shortest_path.Find(graph.vs["a"], nil)
-	assert.False(t, found)
-	assert.Nil(t, actual)
+	uc := shortest_path.NewUniformCostByInterface()
+
+	actual := uc.Find(graph.vs["a"], nil)
+	assert.NotNil(t, actual)
+	assert.False(t, actual.Found)
 }
 
 func Test_UniformCost_TestNotFound(t *testing.T) {
 	graph := &testGraph{}
 	graph.buildTestGraph()
 
-	found, actual := shortest_path.Find(graph.vs["a"], &testVertex{id: "c"})
-	assert.False(t, found)
-	assert.Nil(t, actual)
+	uc := shortest_path.NewUniformCostByInterface()
+
+	actual := uc.Find(graph.vs["a"], &testVertex{id: "c"})
+	assert.NotNil(t, actual)
+	assert.False(t, actual.Found)
 }
 
 func Test_UniformCost_TestSearchSameNode(t *testing.T) {
 	graph := &testGraph{}
 	graph.buildTestGraph()
 
-	found, actual := shortest_path.Find(graph.vs["a"], graph.vs["a"])
-	assert.True(t, found)
+	uc := shortest_path.NewUniformCostByInterface()
+
+	actual := uc.Find(graph.vs["a"], graph.vs["a"])
 	assert.NotNil(t, actual)
+	assert.True(t, actual.Found)
 	assert.Equal(t, actual.Cost, 0)
 	assert.Equal(t, String(actual.Path), "a")
 }
@@ -121,9 +129,11 @@ func Test_UniformCost_TestShortestPathFound(t *testing.T) {
 	graph := &testGraph{}
 	graph.buildTestGraph()
 
-	found, actual := shortest_path.Find(graph.vs["a"], graph.vs["g"])
-	assert.True(t, found)
+	uc := shortest_path.NewUniformCostByInterface()
+
+	actual := uc.Find(graph.vs["a"], graph.vs["g"])
 	assert.NotNil(t, actual)
+	assert.True(t, actual.Found)
 	assert.Equal(t, actual.Cost, 8)
 	assert.Equal(t, String(actual.Path), "a,d,f,g")
 }

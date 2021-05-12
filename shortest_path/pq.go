@@ -3,26 +3,30 @@
 package shortest_path
 
 type Item struct {
-	value *Node
-	index int
+	value    interface{}
+	priority PriorityFunc
+	index    int
 }
 
-func (item *Item) Value() *Node {
+func (item *Item) Value() interface{} {
 	return item.value
 }
 
 type PriorityQueue []*Item
+type PriorityFunc func() int
 
-func NewItem(node *Node) *Item {
+func NewItem(value interface{}, priority PriorityFunc) *Item {
 	return &Item{
-		value: node,
+		value:    value,
+		priority: priority,
 	}
 }
 
-func NewInitialItem(node *Node, index int) *Item {
+func NewInitialItem(value interface{}, priority PriorityFunc, index int) *Item {
 	return &Item{
-		value: node,
-		index: index,
+		value:    value,
+		priority: priority,
+		index:    index,
 	}
 }
 
@@ -30,7 +34,7 @@ func (pq PriorityQueue) Len() int { return len(pq) }
 
 func (pq PriorityQueue) Less(i, j int) bool {
 	// Pop lowest value first
-	return pq[i].value.Cost < pq[j].value.Cost
+	return pq[i].priority() < pq[j].priority()
 }
 
 func (pq PriorityQueue) Swap(i, j int) {

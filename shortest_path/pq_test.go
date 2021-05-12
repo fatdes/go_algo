@@ -8,77 +8,85 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createNode(cost int) *shortest_path.Node {
-	return &shortest_path.Node{
-		Cost: cost,
+type TestItem struct {
+	priority int
+}
+
+func (t *TestItem) Priority() int {
+	return t.priority
+}
+
+func createTestItem(priority int) *TestItem {
+	return &TestItem{
+		priority: priority,
 	}
 }
 
 func Test_PQ(t *testing.T) {
 	type tc struct {
 		name   string
-		init   []*shortest_path.Node
-		push   []*shortest_path.Node
-		expect []*shortest_path.Node
+		init   []*TestItem
+		push   []*TestItem
+		expect []*TestItem
 	}
 
 	tcs := []*tc{
 		{
 			name:   "no item",
-			expect: []*shortest_path.Node{},
+			expect: []*TestItem{},
 		},
 		{
 			name: "init 1 item",
-			init: []*shortest_path.Node{
-				createNode(1),
+			init: []*TestItem{
+				createTestItem(1),
 			},
-			expect: []*shortest_path.Node{
-				createNode(1),
+			expect: []*TestItem{
+				createTestItem(1),
 			},
 		},
 		{
 			name: "init 2 item in desc order",
-			init: []*shortest_path.Node{
-				createNode(999),
-				createNode(1),
+			init: []*TestItem{
+				createTestItem(999),
+				createTestItem(1),
 			},
-			expect: []*shortest_path.Node{
-				createNode(1),
-				createNode(999),
+			expect: []*TestItem{
+				createTestItem(1),
+				createTestItem(999),
 			},
 		},
 		{
 			name: "init 2 item in desc order, push item in between",
-			init: []*shortest_path.Node{
-				createNode(999),
-				createNode(1),
+			init: []*TestItem{
+				createTestItem(999),
+				createTestItem(1),
 			},
-			push: []*shortest_path.Node{
-				createNode(555),
+			push: []*TestItem{
+				createTestItem(555),
 			},
-			expect: []*shortest_path.Node{
-				createNode(1),
-				createNode(555),
-				createNode(999),
+			expect: []*TestItem{
+				createTestItem(1),
+				createTestItem(555),
+				createTestItem(999),
 			},
 		},
 	}
 
 	for _, tt := range tcs {
 		pq := make(shortest_path.PriorityQueue, 0)
-		for i, node := range tt.init {
-			pq = append(pq, shortest_path.NewInitialItem(node, i))
+		for i, ti := range tt.init {
+			pq = append(pq, shortest_path.NewInitialItem(ti, ti.Priority, i))
 		}
 		heap.Init(&pq)
 
-		for _, node := range tt.push {
-			heap.Push(&pq, shortest_path.NewItem(node))
+		for _, ti := range tt.push {
+			heap.Push(&pq, shortest_path.NewItem(ti, ti.Priority))
 		}
 
-		actual := make([]*shortest_path.Node, 0)
+		actual := make([]*TestItem, 0)
 		for pq.Len() > 0 {
 			item := heap.Pop(&pq).(*shortest_path.Item)
-			actual = append(actual, item.Value())
+			actual = append(actual, item.Value().(*TestItem))
 		}
 
 		assert.Equal(t, tt.expect, actual)
